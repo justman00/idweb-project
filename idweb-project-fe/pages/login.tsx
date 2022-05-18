@@ -67,7 +67,7 @@ const Page: NextPage = () => {
         },
       ).then((res) => res.json());
 
-      setCookies('userToken', { accessToken });
+      setCookies('userToken', accessToken);
       router.push('/');
     } catch (error) {
       setErr('Something went wrong. Please try again');

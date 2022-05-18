@@ -5,12 +5,12 @@ import Link from 'next/link';
 import React from 'react';
 
 export interface ICoursePreview {
+  id: number;
   title: string;
   description: string;
   thumbnail: string;
   date: string;
   authorName: string;
-  href: string;
   status?: string;
 }
 
@@ -29,12 +29,12 @@ export const CoursePreview: React.FC<ICoursePreview> = ({
   authorName,
   date,
   description,
-  href,
   thumbnail,
   title,
   status,
+  id,
 }) => (
-  <Link href={href}>
+  <Link href={`/courses/${id}`}>
     <a
       css={css`
         color: unset;
@@ -90,7 +90,7 @@ export const CoursePreview: React.FC<ICoursePreview> = ({
           {
             // eslint-disable-next-line no-nested-ternary
             status ? (
-              status === 'published' ? (
+              status === 'PUBLISHED' ? (
                 <Badge
                   css={css`
                     display: inline;

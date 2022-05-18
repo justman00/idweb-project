@@ -54,7 +54,12 @@ const Page: NextPage = () => {
 
     const formBody: string[] = [];
     formData.forEach((val, key) => {
-      const encodedKey = encodeURIComponent(key);
+      let encodedKey: string;
+      if (key === 'email') {
+        encodedKey = encodeURIComponent('username');
+      } else {
+        encodedKey = encodeURIComponent(key);
+      }
       const encodedValue = encodeURIComponent(val.toString());
       formBody.push(`${encodedKey}=${encodedValue}`);
     });
@@ -82,8 +87,6 @@ const Page: NextPage = () => {
           method: 'POST',
         },
       ).then((res) => res.json());
-
-      console.log({ accessToken });
 
       setCookies('userToken', accessToken);
       router.push('/');
@@ -113,7 +116,6 @@ const Page: NextPage = () => {
           <form onSubmit={onSubmit}>
             <Input name="firstName" type="text" required label="First Name" />
             <Input name="lastName" type="text" required label="Last Name" />
-            <Input name="username" type="email" required label="Email" />
             <Input name="email" type="email" required label="Email" />
             <Input name="password" type="password" required label="Password" />
             <Input

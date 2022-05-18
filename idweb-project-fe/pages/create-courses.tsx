@@ -110,42 +110,6 @@ const Page: NextPage<{ courses: ICoursePreview[]; user: IUser }> = ({
 
 export default Page;
 
-const coursePreviews: ICoursePreview[] = [
-  {
-    authorName: 'Vlad',
-    date: 'Apr 13, 2022',
-    description:
-      'This is a very long and insightful description of one of the courses. Another sentence is here to show how insightful this can be.',
-    href: '/courses/learn-go-deeply',
-    thumbnail:
-      'https://www.freecodecamp.org/news/content/images/2021/10/golang.png',
-    title: 'Learn Go Deeply',
-    status: 'published',
-  },
-  {
-    authorName: 'Vlad',
-    date: 'Mar 10, 2022',
-    description:
-      'This is a very long and insightful description of one of the courses. Another sentence is here to show how insightful this can be.',
-    href: '/courses/advanced-go',
-    thumbnail:
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Go_Logo_Blue.svg/1200px-Go_Logo_Blue.svg.png',
-    title: 'Advanced Go',
-    status: 'published',
-  },
-  {
-    authorName: 'Vlad',
-    date: 'Jan 23, 2022',
-    description:
-      'This is a very long and insightful description of one of the courses. Another sentence is here to show how insightful this can be.',
-    href: '/courses/master-javascript',
-    thumbnail:
-      'https://www.cloudsavvyit.com/p/uploads/2021/02/c123ee3a.jpg?width=1198&trim=1,1&bg-color=000&pad=1,1',
-    title: 'Master JavaScript',
-    status: 'draft',
-  },
-];
-
 export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   const userToken = getCookie('userToken', { req, res });
 
@@ -158,13 +122,33 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
     };
   }
 
-  return {
-    props: {
-      user: {
-        email: 'blabla',
-        id: 'fueiwbfuiwebfi3ubv',
+  console.log(userToken);
+
+  // TODO: endpoint for get user
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { data }: { data: ICoursePreview[] } = await fetch(
+      'http://idweb-project.westeurope.cloudapp.azure.com:8080/api/courses/users',
+      {
+        headers: {
+          Authorization: `Bearer ${userToken.toString()}`,
+        },
       },
-      courses: coursePreviews,
-    },
-  };
+    ).then((response) => response.json());
+
+    return {
+      props: {
+        user: {
+          email: 'blabla',
+          id: 'fueiwbfuiwebfi3ubv',
+        },
+        courses: data || [],
+      },
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      props: {},
+    };
+  }
 };
