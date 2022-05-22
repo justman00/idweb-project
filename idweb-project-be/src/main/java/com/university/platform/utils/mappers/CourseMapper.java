@@ -28,6 +28,7 @@ public final class CourseMapper {
                             course.getAuthor().getFirstName()
                                     .concat(SPACE)
                                     .concat(course.getAuthor().getLastName()))
+                    .authorId(course.getAuthor().getId())
                     .description(course.getDescription())
                     .thumbnail(course.getThumbnail())
                     .date(course.getLastUpdateDate())

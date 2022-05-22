@@ -23,6 +23,7 @@ public class CourseResponseDto {
     private String thumbnail;
     private LocalDate date;
     private String authorName;
+    private Long authorId;
     private String status;
     private Set<ChapterToCourseResponseDto> chapters;
 }

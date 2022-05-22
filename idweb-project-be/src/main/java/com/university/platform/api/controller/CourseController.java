@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -64,8 +65,8 @@ public class CourseController {
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE,
             MediaType.TEXT_PLAIN_VALUE, MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
     public ResponseEntity<Response<CourseResponseDto>> createCourse(
-            @RequestPart("thumbnail") @NotNull(message = "Course should have thumbnail") MultipartFile thumbnail,
-            @RequestPart("course") @Valid CourseRequestDto courseRequestDto, Errors validationErrors) {
+            @RequestParam("thumbnail") @NotNull(message = "Course should have thumbnail") MultipartFile thumbnail,
+            @ModelAttribute @Valid CourseRequestDto courseRequestDto, Errors validationErrors) {
 
         if (validationErrors.hasErrors()) {
             throw new ValidationException(Objects.requireNonNull(validationErrors.getFieldError()).getDefaultMessage());
@@ -78,8 +79,8 @@ public class CourseController {
             MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_PDF_VALUE, MediaType.IMAGE_PNG_VALUE,
             MediaType.IMAGE_JPEG_VALUE})
     public ResponseEntity<Response<CourseResponseDto>> updateCourse(@PathVariable Long id,
-            @RequestPart("thumbnail") MultipartFile thumbnail,
-            @RequestPart("course") @Valid CourseRequestDto courseRequestDto, Errors validationErrors) {
+            @RequestParam("thumbnail") MultipartFile thumbnail,
+            @ModelAttribute @Valid CourseRequestDto courseRequestDto, Errors validationErrors) {
 
         if (validationErrors.hasErrors()) {
             throw new ValidationException(Objects.requireNonNull(validationErrors.getFieldError()).getDefaultMessage());
@@ -92,8 +93,8 @@ public class CourseController {
             MediaType.APPLICATION_JSON_VALUE,
             MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_PDF_VALUE})
     public ResponseEntity<Response<CourseResponseDto>> updateCourseChapter(@PathVariable Long id,
-            @RequestPart("chapter") @Valid ChapterRequestDto chapterRequestDto,
-            @RequestPart("chapterAttachments") MultipartFile[] chapterAttachments, Errors validationErrors) {
+            @ModelAttribute @Valid ChapterRequestDto chapterRequestDto,
+            @RequestPart(value = "chapterAttachments") MultipartFile[] chapterAttachments, Errors validationErrors) {
 
         if (validationErrors.hasErrors()) {
             throw new ValidationException(Objects.requireNonNull(validationErrors.getFieldError()).getDefaultMessage());
