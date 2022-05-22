@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/router';
 import { GetServerSideProps, NextPage } from 'next';
 import { getCookie } from 'cookies-next';
 import {
@@ -15,6 +16,7 @@ import { Delete, Plus } from '@sumup/icons';
 import { Meta } from '../components/Meta';
 import Navigation from '../components/Navigation';
 import { IUser } from '../components/Navigation/Navigation';
+import { getUser } from '../utils/getUser';
 
 const title = 'Welcome to SumUp Next.js';
 
@@ -26,7 +28,7 @@ interface IChapter {
 
 const Page: NextPage<{ user: IUser }> = ({ user }) => {
   const [chapters, setChapters] = useState<IChapter[]>([]);
-  const [thumbnailFile, setThumbnailFile] = useState<File>();
+  const router = useRouter();
 
   const onAddChapter: React.MouseEventHandler<HTMLDivElement> = () => {
     setChapters([
@@ -44,31 +46,23 @@ const Page: NextPage<{ user: IUser }> = ({ user }) => {
     e.preventDefault();
 
     const formData = new FormData(e.target as HTMLFormElement);
-    const apiFormData = new FormData();
-
-    const jsonData: { [k: string]: string } = {};
-    jsonData.courseTitle = formData.get('title') as string;
-    jsonData.courseDescription = formData.get('description') as string;
-
-    apiFormData.append('course', JSON.stringify(jsonData));
-    apiFormData.append('thumbnail', thumbnailFile);
 
     try {
       const userToken = getCookie('userToken');
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const response = await fetch(
+      await fetch(
         'http://idweb-project.westeurope.cloudapp.azure.com:8080/api/courses',
         {
           method: 'POST',
-          body: apiFormData,
+          body: formData,
           headers: {
             Authorization: `Bearer ${userToken as string}`,
           },
         },
-      ).then(console.log);
+      );
 
-      console.log(response);
+      router.push('/create-courses');
     } catch (error) {
       console.error(error);
     }
@@ -89,15 +83,20 @@ const Page: NextPage<{ user: IUser }> = ({ user }) => {
             `}
             onSubmit={handleSubmit}
           >
-            <Input name="title" label="Course title" required />
-            <TextArea name="description" label="Course description" required />
+            <Input name="courseTitle" label="Course title" required />
+            <TextArea
+              name="courseDescription"
+              label="Course description"
+              required
+            />
             <ImageInput
+              required
               name="thumbnail"
               label="Thumbnail"
               component={Avatar}
               clearButtonLabel="clear"
               loadingLabel="loading"
-              onChange={setThumbnailFile}
+              onChange={() => {}}
               onClear={() => {}}
             />
 
@@ -189,12 +188,20 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
     };
   }
 
-  return {
-    props: {
-      user: {
-        email: 'blabla',
-        id: 'fueiwbfuiwebfi3ubv',
+  try {
+    const user = await getUser(userToken as string);
+
+    return {
+      props: {
+        user,
       },
-    },
-  };
+    };
+  } catch (error) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
 };

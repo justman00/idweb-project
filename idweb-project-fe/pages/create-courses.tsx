@@ -14,6 +14,7 @@ import {
   ICoursePreview,
 } from '../components/CoursePreview/CoursePreview';
 import { IUser } from '../components/Navigation/Navigation';
+import { getUser } from '../utils/getUser';
 
 const title = 'Welcome to SumUp Next.js';
 
@@ -122,10 +123,9 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
     };
   }
 
-  console.log(userToken);
-
-  // TODO: endpoint for get user
   try {
+    const user = await getUser(userToken.toString());
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { data }: { data: ICoursePreview[] } = await fetch(
       'http://idweb-project.westeurope.cloudapp.azure.com:8080/api/courses/users',
@@ -138,10 +138,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 
     return {
       props: {
-        user: {
-          email: 'blabla',
-          id: 'fueiwbfuiwebfi3ubv',
-        },
+        user,
         courses: data || [],
       },
     };

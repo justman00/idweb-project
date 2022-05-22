@@ -13,6 +13,8 @@ import React, { useState } from 'react';
 export interface IUser {
   email: string;
   id: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 export const Navigation: React.FC<{ user: IUser }> = ({ children, user }) => {

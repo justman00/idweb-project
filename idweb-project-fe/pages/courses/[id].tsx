@@ -12,6 +12,7 @@ import {
   Image,
   ListItemGroup,
 } from '@sumup/circuit-ui';
+import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import { File } from '@sumup/icons';
@@ -19,6 +20,7 @@ import { File } from '@sumup/icons';
 import { Meta } from '../../components/Meta';
 import Navigation from '../../components/Navigation';
 import { IUser } from '../../components/Navigation/Navigation';
+import { getUser } from '../../utils/getUser';
 
 const title = 'Welcome to SumUp Next.js';
 
@@ -41,7 +43,7 @@ interface ICourse {
   description: string;
   thumbnail: string;
   date: string;
-  authorID: string;
+  authorId: string;
   href: string;
   status: string;
   chapters: IChapter[];
@@ -55,13 +57,59 @@ const StyledBadge = styled(Badge)(
 );
 
 const Page: NextPage<{ course: ICourse; user: IUser }> = ({ course, user }) => {
-  const isUserAuthor = course.authorID === user.id;
+  const router = useRouter();
+
+  const isUserAuthor = course.authorId === user.id;
   const isPublished = course.status === 'PUBLISHED';
   const badge = isPublished ? (
     <StyledBadge variant="success">Published</StyledBadge>
   ) : (
     <StyledBadge variant="notify">Draft</StyledBadge>
   );
+
+  const onPublishOrDraft = async () => {
+    const formData = new FormData();
+
+    formData.append('status', isPublished ? 'draft' : 'published');
+
+    try {
+      const userToken = getCookie('userToken');
+
+      await fetch(
+        `http://idweb-project.westeurope.cloudapp.azure.com:8080/api/courses/${course.id}`,
+        {
+          method: 'PATCH',
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${userToken.toString()}`,
+          },
+        },
+      );
+
+      router.push('/create-courses');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const onDelete = async () => {
+    try {
+      const userToken = getCookie('userToken');
+
+      await fetch(
+        `http://idweb-project.westeurope.cloudapp.azure.com:8080/api/courses/${course.id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${userToken.toString()}`,
+          },
+        },
+      );
+      router.push('/create-courses');
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <>
@@ -141,12 +189,18 @@ const Page: NextPage<{ course: ICourse; user: IUser }> = ({ course, user }) => {
             {isUserAuthor && (
               <ButtonGroup>
                 <Button
+                  onClick={onPublishOrDraft}
                   type="button"
                   variant={isPublished ? 'secondary' : 'primary'}
                 >
                   Convert to {isPublished ? 'draft' : 'published'} state
                 </Button>
-                <Button type="button" variant="primary" destructive>
+                <Button
+                  onClick={onDelete}
+                  type="button"
+                  variant="primary"
+                  destructive
+                >
                   Delete course
                 </Button>
               </ButtonGroup>
@@ -176,8 +230,9 @@ export const getServerSideProps: GetServerSideProps = async ({
     };
   }
 
-  // TODO: endpoint for get user
   try {
+    const user = await getUser(userToken.toString());
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { data }: { data: ICourse } = await fetch(
       `http://idweb-project.westeurope.cloudapp.azure.com:8080/api/courses/${
@@ -190,21 +245,19 @@ export const getServerSideProps: GetServerSideProps = async ({
       },
     ).then((response) => response.json());
 
-    console.log(data, userToken);
-
     return {
       props: {
-        user: {
-          email: 'blabla',
-          id: 'fueiwbfuiwebfi3ubv',
-        },
+        user,
         course: data,
       },
     };
   } catch (error) {
     console.error(error);
     return {
-      props: {},
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
     };
   }
 };
