@@ -50,7 +50,14 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
       },
     ).then((response) => response.json());
 
-    console.log(data, userToken);
+    if (!data) {
+      return {
+        redirect: {
+          destination: '/login',
+          permanent: false,
+        },
+      };
+    }
 
     return {
       props: {
@@ -66,7 +73,10 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   } catch (error) {
     console.error(error);
     return {
-      props: {},
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
     };
   }
 };

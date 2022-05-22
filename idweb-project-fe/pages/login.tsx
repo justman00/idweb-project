@@ -43,7 +43,6 @@ const Page: NextPage = () => {
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
-    // do API request
 
     const formData = new FormData(e.target as HTMLFormElement);
 

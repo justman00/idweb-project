@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { GetServerSideProps, NextPage } from 'next';
 import { getCookie } from 'cookies-next';
-import { Button, Headline, Input, TextArea } from '@sumup/circuit-ui';
+import {
+  Avatar,
+  Button,
+  Headline,
+  ImageInput,
+  Input,
+  TextArea,
+} from '@sumup/circuit-ui';
 import { css } from '@emotion/react';
 import { Delete, Plus } from '@sumup/icons';
 
@@ -19,6 +26,7 @@ interface IChapter {
 
 const Page: NextPage<{ user: IUser }> = ({ user }) => {
   const [chapters, setChapters] = useState<IChapter[]>([]);
+  const [thumbnailFile, setThumbnailFile] = useState<File>();
 
   const onAddChapter: React.MouseEventHandler<HTMLDivElement> = () => {
     setChapters([
@@ -30,6 +38,40 @@ const Page: NextPage<{ user: IUser }> = ({ user }) => {
   const createOnDeleteChapterHandler = (idx) => () => {
     const filteredChapters = chapters.filter((chap, i) => i !== idx);
     setChapters(filteredChapters);
+  };
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target as HTMLFormElement);
+    const apiFormData = new FormData();
+
+    const jsonData: { [k: string]: string } = {};
+    jsonData.courseTitle = formData.get('title') as string;
+    jsonData.courseDescription = formData.get('description') as string;
+
+    apiFormData.append('course', JSON.stringify(jsonData));
+    apiFormData.append('thumbnail', thumbnailFile);
+
+    try {
+      const userToken = getCookie('userToken');
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const response = await fetch(
+        'http://idweb-project.westeurope.cloudapp.azure.com:8080/api/courses',
+        {
+          method: 'POST',
+          body: apiFormData,
+          headers: {
+            Authorization: `Bearer ${userToken as string}`,
+          },
+        },
+      ).then(console.log);
+
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -45,9 +87,19 @@ const Page: NextPage<{ user: IUser }> = ({ user }) => {
             css={css`
               margin-bottom: 48px;
             `}
+            onSubmit={handleSubmit}
           >
             <Input name="title" label="Course title" required />
             <TextArea name="description" label="Course description" required />
+            <ImageInput
+              name="thumbnail"
+              label="Thumbnail"
+              component={Avatar}
+              clearButtonLabel="clear"
+              loadingLabel="loading"
+              onChange={setThumbnailFile}
+              onClear={() => {}}
+            />
 
             <Headline as="h2" size="two">
               Create one or more chapters
